@@ -28,7 +28,8 @@
 include(CMakeParseArguments)
 
 function(target_precompiled_header) # target [...] header
-                                    # [REUSE reuse_target] [TYPE type]
+									# [REUSE reuse_target] [TYPE type]
+									# PCH_FLAGS flags...
 	set(lang ${CMAKE_PCH_COMPILER_LANGUAGE})
 
 	if(NOT MSVC AND
@@ -43,7 +44,7 @@ function(target_precompiled_header) # target [...] header
 		return()
 	endif()
 
-	cmake_parse_arguments(ARGS "" "REUSE;TYPE" "" ${ARGN})
+	cmake_parse_arguments(ARGS "" "REUSE;TYPE" "PCH_FLAGS" ${ARGN})
 	if(ARGS_SHARED)
 		set(ARGS_REUSE ${ARGS_SHARED})
 	endif()
@@ -79,6 +80,7 @@ function(target_precompiled_header) # target [...] header
 		if(MSVC)
 			get_filename_component(abs_pch "${target_dir_header}.pch" ABSOLUTE)
 			get_filename_component(abs_header "${header}" ABSOLUTE)
+			get_filename_component(abs_cpp "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${pch_target}.cpp" ABSOLUTE)
 		endif()
 
 		# add precompiled header creation flags to PCH target
@@ -97,14 +99,15 @@ function(target_precompiled_header) # target [...] header
 				# /Yc - create precompiled header
 				# /Fp - exact location for precompiled header
 				# /FI - force include of precompiled header
-				set(flags "/Yc\"${abs_header}\" /Fp\"${abs_pch}\" /FI\"${abs_header}\"")
+				set(flags "${ARGS_PCH_FLAGS} /Yc\"${abs_header}\" /Fp\"${abs_pch}\" /FI\"${abs_header}\"")
+				file(TOUCH "${abs_cpp}")
 				set_source_files_properties(
-					${header}
+					"${abs_cpp}"
 					PROPERTIES
 					LANGUAGE ${lang}
 					COMPILE_FLAGS ${flags}
 					)
-				add_library(${pch_target} OBJECT ${header})
+				add_library(${pch_target} OBJECT "${abs_cpp}")
 			else()
 				set(flags "-x ${header_type}")
 				set_source_files_properties(
