@@ -76,9 +76,11 @@ function(target_precompiled_header) # target [...] header
 
 		__compute_pch_build_path(header_build_path "${header}")
 		set(target_dir_header "${target_dir}/${header_build_path}")
+		set(pch "${target_dir_header}.pch")
+
 
 		if(MSVC)
-			get_filename_component(abs_pch "${target_dir_header}.pch" ABSOLUTE)
+			get_filename_component(abs_pch "${pch}" ABSOLUTE)
 			get_filename_component(abs_header "${header}" ABSOLUTE)
 			get_filename_component(abs_cpp "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${pch_target}.cpp" ABSOLUTE)
 		endif()
@@ -135,7 +137,7 @@ function(target_precompiled_header) # target [...] header
 			target_sources(${target} PRIVATE $<TARGET_OBJECTS:${pch_target}>)
 			set(flags "/Yu${abs_header}")
 		else()
-			set(flags -include ${target_dir_header})
+			set(flags -include-pch ${pch})
 		endif()
 
 		if(CMAKE_VERSION VERSION_LESS 3.3)
