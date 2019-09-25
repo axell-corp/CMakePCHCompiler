@@ -44,7 +44,7 @@ function(target_precompiled_header) # target [...] header
 		return()
 	endif()
 
-	cmake_parse_arguments(ARGS "" "REUSE;TYPE" "PCH_FLAGS" ${ARGN})
+	cmake_parse_arguments(ARGS "" "REUSE;TYPE" "PCH_FLAGS;EXT_LINK" ${ARGN})
 	if(ARGS_SHARED)
 		set(ARGS_REUSE ${ARGS_SHARED})
 	endif()
@@ -136,9 +136,16 @@ function(target_precompiled_header) # target [...] header
 				)
 			target_sources(${target} PRIVATE $<TARGET_OBJECTS:${pch_target}>)
 			set(flags "/Yu${abs_header}")
+			foreach(ext_target IN LISTS ARGS_EXT_LINK)
+				target_link_libraries(${ext_target} $<TARGET_OBJECTS:${pch_target}>)
+			endforeach()
 		else()
 			set(flags -include-pch ${pch})
 		endif()
+
+		foreach(ext_target IN LISTS ARGS_EXT_LINK)
+			target_link_libraries(${ext_target} ${target})
+		endforeach()
 
 		if(CMAKE_VERSION VERSION_LESS 3.3)
 			target_compile_options(${target} PRIVATE "${flags}")
