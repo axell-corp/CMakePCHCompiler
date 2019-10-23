@@ -76,7 +76,11 @@ function(target_precompiled_header) # target [...] header
 
 		__compute_pch_build_path(header_build_path "${header}")
 		set(target_dir_header "${target_dir}/${header_build_path}")
-		set(pch "${target_dir_header}.pch")
+		if(CMAKE_${lang}_COMPILER_ID STREQUAL "GNU")
+			set(pch "${target_dir_header}.gch")
+		else()
+			set(pch "${target_dir_header}.pch")
+		endif()
 
 
 		if(MSVC)
@@ -111,13 +115,21 @@ function(target_precompiled_header) # target [...] header
 					)
 				add_library(${pch_target} OBJECT "${abs_cpp}")
 			else()
-				set(flags "-x ${header_type}")
-				set_source_files_properties(
-					${header}
-					PROPERTIES
-					LANGUAGE ${lang}PCH
-					COMPILE_FLAGS ${flags}
-					)
+				if(CMAKE_${lang}_COMPILER_ID STREQUAL "GNU")
+					set_source_files_properties(
+						${header}
+						PROPERTIES
+						LANGUAGE ${lang}PCH
+						)
+				else()
+					set(flags "-x ${header_type}")
+					set_source_files_properties(
+						${header}
+						PROPERTIES
+						LANGUAGE ${lang}PCH
+						COMPILE_FLAGS ${flags}
+						)
+				endif()
 				add_library(${pch_target} OBJECT ${header})
 			endif()
 			get_target_property(target_libraries ${target} LINK_LIBRARIES)
@@ -140,7 +152,9 @@ function(target_precompiled_header) # target [...] header
 				target_link_libraries(${ext_target} $<TARGET_OBJECTS:${pch_target}>)
 			endforeach()
 		else()
-			set(flags -include-pch ${pch})
+			if(NOT CMAKE_${lang}_COMPILER_ID STREQUAL "GNU")
+				set(flags -include-pch ${pch})
+			endif()
 		endif()
 
 		foreach(ext_target IN LISTS ARGS_EXT_LINK)
