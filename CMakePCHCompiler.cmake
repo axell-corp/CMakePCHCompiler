@@ -137,6 +137,8 @@ function(target_precompiled_header) # target [...] header
 		endif()
 
 		add_dependencies(${target} ${pch_target})
+		get_target_property(target_src ${target} SOURCES)
+		set_source_files_properties(${target_src} PROPERTIES OBJECT_DEPENDS ${pch})
 
 		# add precompiled header insertion flags to regular target
 		if(MSVC)
