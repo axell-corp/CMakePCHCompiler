@@ -120,9 +120,10 @@ function(target_precompiled_header) # target [...] header
 						${header}
 						PROPERTIES
 						LANGUAGE ${lang}PCH
+						COMPILE_FLAGS ${ARGS_PCH_FLAGS}
 						)
 				else()
-					set(flags "-x ${header_type}")
+					set(flags "-x ${header_type} ${ARGS_PCH_FLAGS}")
 					set_source_files_properties(
 						${header}
 						PROPERTIES
