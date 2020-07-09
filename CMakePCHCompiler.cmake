@@ -120,7 +120,7 @@ function(target_precompiled_header) # target [...] header
 						${header}
 						PROPERTIES
 						LANGUAGE ${lang}PCH
-						COMPILE_FLAGS ${ARGS_PCH_FLAGS}
+						COMPILE_FLAGS "${ARGS_PCH_FLAGS}"
 						)
 				else()
 					set(flags "-x ${header_type} ${ARGS_PCH_FLAGS}")
